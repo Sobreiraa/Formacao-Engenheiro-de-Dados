@@ -136,8 +136,72 @@ CALL cap04.aumenta_salario('Sobreira', 15::NUMERIC); -- Funcionário existe;
 CALL cap04.aumenta_salario('Teste', 15::NUMERIC); -- Funcionário não existe;
 
 
+-- 7. Crie uma function que receba o nome do departamento e retorne a média salarial desse departamento.
+CREATE OR REPLACE FUNCTION cap04.media_salario_departamento(f_nome_departamento TEXT)
+RETURNS NUMERIC AS $$
+DECLARE
+	media NUMERIC;
+BEGIN
+	-- Cálculo da média
+	SELECT AVG(salario)
+    INTO media
+    FROM cap04.funcionarios
+    WHERE departamento = f_nome_departamento;
 
-	
+	-- Caso não haja funcionários nesse departamento
+    IF media IS NULL THEN
+        RAISE NOTICE 'Nenhum funcionário encontrado no departamento: %', f_nome_departamento;
+        RETURN NULL;
+    END IF;
+
+	-- Retorno
+	RETURN ROUND(media, 2);
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Testando a função
+SELECT cap04.media_salario_departamento('Engenharia de Dados'); -- Departamento que existe
+
+
+-- 8. Crie uma trigger que impeça a inserção de um funcionário com salário menor que 1000.
+CREATE OR REPLACE FUNCTION cap04.verifica_salario_funcionario()
+RETURNS TRIGGER AS $$
+BEGIN
+	-- Verifica se o salário do funcionário é menor que 1000.
+	IF NEW.salario < 1000 THEN
+		RAISE EXCEPTION 'Salário menor que 1000.';
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Criando TRIGGER
+CREATE TRIGGER trg_verifica_salario_funcionario
+BEFORE INSERT ON cap04.funcionarios
+FOR EACH ROW EXECUTE FUNCTION cap04.verifica_salario_funcionario();
+
+
+-- Testando
+INSERT INTO cap04.funcionarios (id_funcionario, nome, departamento, data_contratacao, salario)
+VALUES (15, 'Teste de Salário', 'Salario', '2025-01-01', 950.00);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
