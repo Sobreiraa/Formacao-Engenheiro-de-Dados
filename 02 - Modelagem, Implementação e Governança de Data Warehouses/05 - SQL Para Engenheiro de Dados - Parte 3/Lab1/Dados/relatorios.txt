@@ -1,0 +1,40 @@
+-- Listar o total de vendas por cliente
+
+SELECT
+    c.nome_cliente,
+    ROUND(SUM(f.valor_venda), 2) AS total_vendas
+FROM dw.tbclientedsa c
+JOIN dw.tbfatodsa f
+    ON c.tbclientedsa_id = f.tbclientedsa_id
+GROUP BY c.nome_cliente
+order by c.nome_cliente ASC;
+
+
+-- Listar o total de vendas por categoria para cliente do tipo_1
+
+SELECT
+    p.categoria_produto,
+    ROUND(SUM(f.valor_venda), 2) AS total_vendas
+FROM dw.tbfatodsa f
+JOIN dw.tbclientedsa c
+    ON f.tbclientedsa_id = c.tbclientedsa_id
+JOIN dw.tbprodutodsa p
+    ON f.tbprodutodsa_id = p.tbprodutodsa_id
+WHERE c.tipo_cliente = 'Tipo_1'
+GROUP BY p.categoria_produto
+ORDER BY total_vendas DESC;
+
+
+-- Produtos com média de vendas superior a 600 no ano de 2023
+
+SELECT
+    p.nome_produto,
+    ROUND(AVG(f.valor_venda), 2) AS media_vendas
+FROM dw.tbfatodsa f
+JOIN dw.tbprodutodsa p
+    ON f.tbprodutodsa_id = p.tbprodutodsa_id
+WHERE f.data >= '2023-01-01'
+  AND f.data <  '2024-01-01'
+GROUP BY p.nome_produto
+HAVING AVG(f.valor_venda) > 600
+ORDER BY media_vendas DESC;
